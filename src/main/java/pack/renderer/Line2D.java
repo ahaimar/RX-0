@@ -23,4 +23,8 @@ public class Line2D {
         this.lifeTime--;
         return this.lifeTime;
     }
+
+    public boolean isAlive() {
+        return this.lifeTime > 0;
+    }
 }

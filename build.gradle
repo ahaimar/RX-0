@@ -1,3 +1,7 @@
+
+                    //
+                    //  Create the dependencies of project
+                    //
 plugins {
     id 'java'
 }
@@ -17,6 +21,7 @@ project.ext {
     lwjglNatives = 'natives-windows'
     imguiVersion = '1.81.0'
 }
+
 repositories {
     flatDir { dirs 'libs' }
     mavenCentral()

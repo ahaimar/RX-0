@@ -51,83 +51,7 @@ public class Shader {
             e.printStackTrace();
             throw new RuntimeException("Error reading shader file: " + filepath, e);
         }
-//        try {
-//
-//            if (!Files.exists(Paths.get(filepath))) {
-//            throw new IOException("Shader file not found:  V 1" + filepath);
-//            }
-//            String source = new String(Files.readAllBytes(Paths.get(filepath)));
-//            String[] splitString = source.split("(#type)( )+([a-zA-Z]+)");
-//
-//            // Find the first pattern after #type 'pattern'
-//            int index = source.indexOf("#type") + 6;
-//            int eol = source.indexOf("\r\n", index);
-//            String firstPattern = source.substring(index, eol).trim();
-//
-//            // Find the second pattern after #type 'pattern'
-//            index = source.indexOf("#type", eol) + 6;
-//            eol = source.indexOf("\r\n", index);
-//            String secondPattern = source.substring(index, eol).trim();
-//
-//            if (firstPattern.equals("vertex")) {
-//                vertexSource = splitString[1];
-//            } else if (firstPattern.equals("fragment")) {
-//                fragmentSource = splitString[1];
-//            } else {
-//                throw new IOException("Unexpected token '" + firstPattern + "'");
-//            }
-//
-//            if (secondPattern.equals("vertex")) {
-//                vertexSource = splitString[2];
-//            } else if (secondPattern.equals("fragment")) {
-//                fragmentSource = splitString[2];
-//            } else {
-//                throw new IOException("Unexpected token '" + secondPattern + "'");
-//            }
-//        } catch(IOException e) {
-//            e.printStackTrace();
-//            assert false : "Error: Could not open file for shader: '" + filepath + "'";
-//        }
     }
-
-    // ia code
-//    public void compile() {
-//        int vertexID = glCreateShader(GL_VERTEX_SHADER);
-//        glShaderSource(vertexID, vertexSource);
-//        glCompileShader(vertexID);
-//        checkCompileErrors(vertexID, "VERTEX");
-//
-//        int fragmentID = glCreateShader(GL_FRAGMENT_SHADER);
-//        glShaderSource(fragmentID, fragmentSource);
-//        glCompileShader(fragmentID);
-//        checkCompileErrors(fragmentID, "FRAGMENT");
-//
-//        shaderProgramID = glCreateProgram();
-//        glAttachShader(shaderProgramID, vertexID);
-//        glAttachShader(shaderProgramID, fragmentID);
-//        glLinkProgram(shaderProgramID);
-//        checkLinkErrors();
-//
-//        glDeleteShader(vertexID);
-//        glDeleteShader(fragmentID);
-//    }
-//    private void checkCompileErrors(int shaderID, String type) {
-//        int success = glGetShaderi(shaderID, GL_COMPILE_STATUS);
-//        if (success == GL_FALSE) {
-//            int len = glGetShaderi(shaderID, GL_INFO_LOG_LENGTH);
-//            String log = glGetShaderInfoLog(shaderID, len);
-//            throw new RuntimeException(type + " SHADER COMPILATION ERROR: " + log);
-//        }
-//    }
-//
-//    private void checkLinkErrors() {
-//        int success = glGetProgrami(shaderProgramID, GL_LINK_STATUS);
-//        if (success == GL_FALSE) {
-//            int len = glGetProgrami(shaderProgramID, GL_INFO_LOG_LENGTH);
-//            String log = glGetProgramInfoLog(shaderProgramID, len);
-//            throw new RuntimeException("SHADER LINKING ERROR: " + log);
-//        }
-//    }
 
     public void compile() {
         // ============================================================
@@ -150,7 +74,7 @@ public class Shader {
             assert false : "";
         }
 
-        // First load and compile the vertex shader
+        // First load and compile the fragment shader
         fragmentID = glCreateShader(GL_FRAGMENT_SHADER);
         // Pass the shader source to the GPU
         glShaderSource(fragmentID, fragmentSource);
@@ -251,5 +175,4 @@ public class Shader {
         use();
         glUniform1iv(varLocation, array);
     }
-
 }

@@ -1,22 +1,24 @@
 package pack.matriale;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
+@Getter
+@NoArgsConstructor
 public class Camera {
 
-    @Getter
-    private Matrix4f projectionMatrix, inverseProjection, inverseView;
-    private Matrix4f viewMatrix;
-    public Vector2f position;
-
-    @Getter
     private Vector2f projectionSize = new Vector2f(32.0f * 40.0f, 32.0f * 21.0f);
-
+    @Setter
+    private Matrix4f projectionMatrix, inverseProjection, inverseView;
+    @Setter
+    private Matrix4f viewMatrix;
+    @Setter
+    public Vector2f position;
 
     public Camera(Vector2f position) {
         this.position = position;
@@ -44,6 +46,11 @@ public class Camera {
         inverseView = new Matrix4f(this.viewMatrix).invert();
 
         return this.viewMatrix;
+    }
+
+    public void setProjectionSize(Vector2f newSize) {
+        this.projectionSize.set(newSize);
+        adjustProjection();
     }
 
 }

@@ -3,8 +3,10 @@ package pack.renderer;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import pack.utils.AssetPool;
+import pack.utils.JMath;
 import pack.windows.Window;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -12,6 +14,7 @@ import java.util.List;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.*;
+import org.joml.Vector2f;
 
 public class DebugDraw {
 
@@ -45,18 +48,15 @@ public class DebugDraw {
         glLineWidth(2.0f);
     }
 
-    public static  void beginFrame() {
+    public static void beginFrame() {
 
         if (!started) {
             start();
             started = true;
         }
-        for (int i = 0; i < lines.size() ; i++) {
-            if (lines.get(i).biginframe() < 0) {
-                lines.remove(i);
-                i--;
-            }
-        }
+
+        // Use an iterator to safely remove expired lines
+        lines.removeIf(line -> line.biginframe() < 0); // this is equivalent to your loop logic but cleaner
     }
 
     public static void draw() {
@@ -109,7 +109,7 @@ public class DebugDraw {
     }
 
     // add line2d methode
-    public static  void addLine2D(Vector2f from, Vector2f to) {
+    public static void addLine2D(Vector2f from, Vector2f to) {
 
         //TODO: add constants from common colors
         addLine2D(from, to, new Vector3f(0,1,0), 1);
@@ -124,6 +124,68 @@ public class DebugDraw {
 
         if (lines.size() >= MAX_LINES) return;
         DebugDraw.lines.add(new Line2D(from, to, color, lifetime));
+    }
+
+    public static void addBox2D(Vector2f center, Vector2f dimensions, float rotation,
+                                Vector3f color, int lifetime) {
+        Vector2f min = new Vector2f(center).sub(new Vector2f(dimensions).div(0.5f));
+        Vector2f max = new Vector2f(center).add(new Vector2f(dimensions).mul(0.5f));
+
+        Vector2f[] vertices = {
+                new Vector2f(min.x, min.y),
+                new Vector2f(min.x, max.y),
+                new Vector2f(max.x, max.y),
+                new Vector2f(max.x, min.y),
+        };
+        if (rotation != 0.0f) {
+            for (Vector2f vet : vertices) {
+                JMath.rotate(vet, rotation, center);
+            }
+        }
+        addLine2D(vertices[0], vertices[1], color, lifetime);
+        addLine2D(vertices[0], vertices[3], color, lifetime);
+        addLine2D(vertices[1], vertices[2], color, lifetime);
+        addLine2D(vertices[2], vertices[3], color, lifetime);
+    }
+
+    public static void addBox2D(Vector2f center, Vector2f dimensions, float rotation) {
+        addBox2D(center, dimensions, rotation,new Vector3f(0, 1, 0), 1);
+    }
+
+    public static void addBox2D(Vector2f center, Vector2f dimensions, float rotation, Vector3f color) {
+
+        addBox2D(center, dimensions,rotation, color,1);
+    }
+
+    public static void addCircle(Vector2f center, float radius,
+                                  Vector3f color, int lifetime){
+
+        Vector2f[] points = new Vector2f[30];
+        int increment = 360 / points.length;
+        int currentAngle = 0;
+
+        for (int i = 0; i < points.length; i++) {
+
+            Vector2f tmp = new Vector2f(0, radius);
+            JMath.rotate(tmp, currentAngle, new Vector2f());
+            points[i] = new Vector2f(tmp).add(center);
+
+            if (i >0){
+                addLine2D(points[i - 1], points[i], color, lifetime);
+            }
+            currentAngle += increment;
+        }
+        addLine2D(points[points.length - 1], points[0], color, lifetime);
+    }
+
+    public static void addCircle(Vector2f center, float radius){
+
+        addCircle(center, radius, new Vector3f(0,1,0), 1);
+    }
+
+    public static void addCircle(Vector2f center, float radius, Vector3f color){
+
+        addCircle(center, radius, color, 1);
     }
 
     public static void destroy() {

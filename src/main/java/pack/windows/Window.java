@@ -7,10 +7,12 @@ import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALCCapabilities;
 import org.lwjgl.openal.ALCapabilities;
 import org.lwjgl.opengl.GL;
+import pack.matriale.Camera;
 import pack.matriale.ImGuiLayer;
 import pack.matriale.KeyListener;
 import pack.matriale.MouseListener;
 import pack.renderer.DebugDraw;
+import pack.renderer.Framebuffer;
 import pack.scens.LevelEditorScene;
 import pack.scens.LevelScene;
 import pack.scens.Scene;
@@ -27,7 +29,7 @@ public class Window {
 
     // Local variables
     private float width, height;
-    private String title;
+    private final String title;
     private volatile long glfwWindow;
     private boolean runtimePlaying = false;
     private long audioContext;
@@ -37,6 +39,7 @@ public class Window {
     private volatile static Window window = null;
     private static Scene currentScene;
     private ImGuiLayer imGuiLayer;
+    private Framebuffer framebuffer;
 
     public int r, g, b, a;
 
@@ -46,12 +49,12 @@ public class Window {
 
     private Window() {
         this.width = 1000;
-        this.height = 800;
+        this.height = 600;
         this.title = "RX-08";
-        r = 1;
-        g = 1;
-        b = 1;
-        a = 1;
+//        r = 0;
+//        g = 0;
+//        b = 1;
+//        a = 1;
     }
 
     public static void changeScene(int newScene) {
@@ -116,7 +119,7 @@ public class Window {
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
         glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-        glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
+        //glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
 
         // Create the window
         glfwWindow = glfwCreateWindow((int) this.width, (int) this.height, this.title, NULL, NULL);
@@ -180,6 +183,7 @@ public class Window {
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
         this.imGuiLayer = new ImGuiLayer(glfwWindow);
         imGuiLayer.initImGui();
+        this.framebuffer = new Framebuffer(3840, 2160);
 
         Window.changeScene(0);
     }
@@ -199,11 +203,13 @@ public class Window {
             glClearColor(r, g, b, a);
             glClear(GL_COLOR_BUFFER_BIT);
 
+            //this.framebuffer.bind();
             if (dt>=0.0f) {
 
                 DebugDraw.draw();
                 currentScene.update(dt);
             }
+            this.framebuffer.unbind();
 
             this.imGuiLayer.updata(dt, currentScene);
 

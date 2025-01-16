@@ -1,12 +1,14 @@
 package pack.matriale;
 
+import org.lwjgl.glfw.GLFW;
+
 import static org.lwjgl.glfw.GLFW.GLFW_PRESS;
 import static org.lwjgl.glfw.GLFW.GLFW_RELEASE;
 
 public class KeyListener {
 
     private volatile static KeyListener instance;
-    private final boolean[] keyPressed = new boolean[350];
+    private final boolean[] keyPressed = new boolean[GLFW.GLFW_KEY_LAST];
     private final boolean[] keyJustPressed = new boolean[350];
     private final boolean[] keyJustReleased = new boolean[350];
 

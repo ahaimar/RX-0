@@ -21,7 +21,7 @@ public abstract class Scene {
 
     protected Renderer renderer = new Renderer();
     protected Camera camera;
-    private volatile boolean isRunning = false;
+    private boolean isRunning = false;
     protected List<GameObject> gameObjects = new ArrayList<>();
     protected GameObject activegameObject = null;
 
@@ -44,6 +44,7 @@ public abstract class Scene {
 
         if (!isRunning) {
             gameObjects.add(go);
+            System.out.println("\nObject " + go.getName() + " is already created !! on the scene *_*");
         }else {
             gameObjects.add(go);
             go.start();

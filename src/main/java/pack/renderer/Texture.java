@@ -16,12 +16,26 @@ import static org.lwjgl.stb.STBImage.*;
 public class Texture {
 
     private String filepath;
-
     private transient int texID;
-
     private int width, height;
 
+    public Texture(){
+        this.texID = -1;
+        this.width = -1;
+        this.height = -1;
+
+    }
+
+    public Texture(int width, int height) {
+        this.filepath = "Generated";
+
+        texID = glGenTextures();
+        glBindTexture(GL_TEXTURE_2D, texID);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+    }
+
     public void init(String filepath) {
+
         if (filepath == null || filepath.isEmpty()) {
             throw new IllegalArgumentException("Filepath cannot be null or empty.");
         }
@@ -40,23 +54,26 @@ public class Texture {
             IntBuffer width = stack.mallocInt(1);
             IntBuffer height = stack.mallocInt(1);
             IntBuffer channels = stack.mallocInt(1);
+
             stbi_set_flip_vertically_on_load(true);
-            ByteBuffer image = stbi_load(filepath, width, height, channels, 0);
+            ByteBuffer image = stbi_load(filepath, width, height, channels, 4);
 
             if (image != null) {
                 try {
                     this.width = width.get(0);
                     this.height = height.get(0);
-                    int format = channels.get(0) == 4 ? GL_RGBA : GL_RGB;
 
-                    glTexImage2D(GL_TEXTURE_2D, 0, format, width.get(0), height.get(0), 0,
-                            format, GL_UNSIGNED_BYTE, image);
+                    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width.get(0), height.get(0), 0,
+                            GL_RGBA, GL_UNSIGNED_BYTE, image);
+                    System.out.println("Texture loaded successfully: " + filepath + " (" + width.get(0) + "x" + height.get(0) + ")");
                 } finally {
                     stbi_image_free(image);
                 }
             } else {
-                throw new RuntimeException("Failed to load texture: " + filepath);
+                throw new RuntimeException("Failed to load texture: " + filepath + ". Reason: " + stbi_failure_reason());
             }
+        } finally {
+            glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture
         }
     }
 

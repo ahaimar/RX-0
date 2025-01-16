@@ -18,26 +18,31 @@ public class GridLines extends Component {
         int firstX = ((int) Math.floor(cameraPos.x / Settings.GRID_WIDTH)) * Settings.GRID_WIDTH;
         int firstY = ((int) Math.floor(cameraPos.y / Settings.GRID_HEIGHT)) * Settings.GRID_HEIGHT;
 
-        // Calculate the number of vertical and horizontal lines
-        int numVtLines = (int) Math.ceil(projectionSize.x / Settings.GRID_WIDTH) + 2;
+        // Calculate the number of vertical and horizontal lines that are visible in the viewport
+        int numVtLines = (int) Math.ceil(projectionSize.x / Settings.GRID_WIDTH) + 2;  // Extra to cover edge cases
         int numHtLines = (int) Math.ceil(projectionSize.y / Settings.GRID_HEIGHT) + 2;
 
-        // Calculate the grid dimensions
+        // Adjust the grid boundaries so we are sure we draw enough lines for the whole screen
         int width = (int) projectionSize.x;
         int height = (int) projectionSize.y;
 
-        // Set grid color
-        Vector3f color = new Vector3f(0.2f, 0.2f, 0.2f);
+        // Set grid color (light grayish for visibility)
+        Vector3f color = new Vector3f(0.5f, 1.5f, 0.1f);
 
-        // Draw vertical and horizontal lines
+        // Draw vertical lines within the visible range
         for (int i = 0; i < numVtLines; i++) {
             int x = firstX + (i * Settings.GRID_WIDTH);
-            DebugDraw.addLine2D(new Vector2f(x, firstY), new Vector2f(x, firstY + height), color);
+            if (x >= cameraPos.x - width && x <= cameraPos.x + width) {  // Only draw if within the viewport
+                DebugDraw.addLine2D(new Vector2f(x, firstY), new Vector2f(x, firstY + height), color);
+            }
         }
 
+        // Draw horizontal lines within the visible range
         for (int i = 0; i < numHtLines; i++) {
             int y = firstY + (i * Settings.GRID_HEIGHT);
-            DebugDraw.addLine2D(new Vector2f(firstX, y), new Vector2f(firstX + width, y), color);
+            if (y >= cameraPos.y - height && y <= cameraPos.y + height) {  // Only draw if within the viewport
+                DebugDraw.addLine2D(new Vector2f(firstX, y), new Vector2f(firstX + width, y), color);
+            }
         }
     }
 }

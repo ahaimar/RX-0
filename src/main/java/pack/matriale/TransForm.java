@@ -37,7 +37,9 @@ public class TransForm {
     }
 
     public void copy(TransForm to) {
-
+        if (to == null) {
+            throw new IllegalArgumentException("Target TransForm cannot be null.");
+        }
         to.position.set(this.position);
         to.scale.set(this.scale);
     }

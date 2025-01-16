@@ -14,32 +14,29 @@ out vec2 fTexCoords;
 out float fTexID;
 
 void main() {
-
-    fColor = aColor;
-    fTexCoords = aTexCoords;
-    fTexID = aTexID;
-    gl_Position = uProjection * uView* vec4(aPos, 1.0);
+    fColor = aColor;                     // Pass color to fragment shader
+    fTexCoords = aTexCoords;             // Pass texture coordinates to fragment shader
+    fTexID = aTexID;                     // Pass texture ID to fragment shader
+    gl_Position = uProjection * uView * vec4(aPos, 1.0);  // Apply projection and view matrices
 }
 
 #type fragment
 #version 330 core
 
-in vec4 fColor;
-in vec2 fTexCoords;
-in float fTexID;
+in vec4 fColor;             // Interpolated color from vertex shader
+in vec2 fTexCoords;        // Interpolated texture coordinates
+in float fTexID;           // Interpolated texture ID
 
-uniform sampler2D uTextures[8];
+uniform sampler2D uTextures[8];  // Array of textures
 
-out vec4 color;
+out vec4 color;             // Final color output
 
 void main() {
-    int id = int(fTexID);
-    if (id >= 0 && id < 8) {
-        color = fColor * texture(uTextures[id], fTexCoords);
+    int id = int(fTexID);      // Convert texture ID to an integer
+    if (id >= 0 && id < 8) {   // Ensure the texture ID is valid (within the range of available textures)
+        color = fColor * texture(uTextures[id], fTexCoords); // Sample the texture and apply color
     } else {
-        // Magenta for invalid texture ID
+        // Magenta for invalid texture ID (used as error checking)
         color = vec4(1.0, 0.0, 1.0, 1.0);
     }
 }
-
-

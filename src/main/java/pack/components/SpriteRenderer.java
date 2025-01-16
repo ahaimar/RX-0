@@ -12,27 +12,11 @@ import pack.renderer.Texture;
 @Setter
 public class SpriteRenderer extends Component {
 
+    @Getter
     private Vector4f color = new Vector4f(1, 1, 1, 1);
     private  Sprite sprite = new Sprite();
     private transient TransForm transForm;
     private transient boolean isDirty = true;
-
-//    public SpriteRenderer(Vector4f color) {
-//
-//        this.color = color;
-//        this.sprite = new Sprite(null);
-//        this.isDirty = true;
-//    }
-//
-//    public SpriteRenderer(Sprite sprite) {
-//
-//        if (sprite == null) {
-//            throw new IllegalArgumentException("Sprite cannot be null");
-//        }
-//        this.sprite = sprite;
-//        this.color = new Vector4f(1, 1, 1, 1);
-//        this.isDirty = true;
-//    }
 
     @Override
     public void start() {
@@ -59,14 +43,14 @@ public class SpriteRenderer extends Component {
         }
     }
 
-    public Vector4f getColor() {
-
-        return color;
-    }
-
     public Texture getTexture(){
 
         return sprite.getTexture();
+    }
+
+    public void setTexture(Texture texture) {
+
+        this.sprite.setTexture(texture);
     }
 
     public Vector2f[] getTexCoord() {
