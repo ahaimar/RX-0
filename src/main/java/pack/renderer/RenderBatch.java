@@ -1,15 +1,11 @@
 package pack.renderer;
 
-import org.joml.Matrix4f;
 import org.joml.Vector2f;
 import org.joml.Vector4f;
-import org.lwjgl.opengl.GL15C;
 import pack.components.SpriteRenderer;
 import pack.objectes.GameObject;
-import pack.utils.AssetPool;
-import pack.windows.Window;
 
-import javax.swing.*;
+import pack.windows.Window;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,27 +44,12 @@ public class RenderBatch implements Comparable<RenderBatch> {
     private int vaoID, vboID;
     private int maxBatchSize;
     private int zIndex;
-    private Shader shader;
+    //private Shader shader;
 
     private Renderer renderer;
 
-    public RenderBatch(int maxBatchSize){
-
-        shader = AssetPool.getShader("assets/shaders/default.glsl");
-        shader = new Shader("assets/shaders/default.glsl");
-        shader.compile();
-        this.sprites = new SpriteRenderer[maxBatchSize];
-        this.maxBatchSize = maxBatchSize;
-
-        vertices  = new float[maxBatchSize * 4 * VERTEX_SIZE];
-
-        this.numSprites = 0;
-        this.hasRoom = true;
-        this.textures = new ArrayList<>();
-    }
 //
     public RenderBatch(int maxBatchSize, int zIndex) {
-        this.renderer = renderer;
 
         this.zIndex = zIndex;
         this.sprites = new SpriteRenderer[maxBatchSize];
@@ -111,8 +92,8 @@ public class RenderBatch implements Comparable<RenderBatch> {
         glVertexAttribPointer(3, TEX_ID_SIZE, GL_FLOAT, false, VERTEX_SIZE_BYTES, TEX_ID_OFFSET);
         glEnableVertexAttribArray(3);
 
-//        glVertexAttribPointer(4, ENTITY_ID_SIZE, GL_FLOAT, false, VERTEX_SIZE_BYTES, ENTITY_ID_OFFSET);
-//        glEnableVertexAttribArray(4);
+        glVertexAttribPointer(4, ENTITY_ID_SIZE, GL_FLOAT, false, VERTEX_SIZE_BYTES, ENTITY_ID_OFFSET);
+        glEnableVertexAttribArray(4);
     }
 
     private int[] generateIndices() {
@@ -161,7 +142,7 @@ public class RenderBatch implements Comparable<RenderBatch> {
         glBufferSubData(GL_ARRAY_BUFFER, 0, vertices);
 
         // use shader
-        shader.use();
+        Shader shader = Renderer.getBoundShader();
         shader.uploadMat4f("uProjection", Window.getScene().camera().getInverseProjection());
         shader.uploadMat4f("uView", Window.getScene().camera().getViewMatrix());
         for (int i = 0; i < textures.size() ; i++) {
@@ -184,59 +165,6 @@ public class RenderBatch implements Comparable<RenderBatch> {
         }
         shader.detach();
     }
-
-//    public void render() {
-//        boolean rebufferData = false;
-//        for (int i=0; i < numSprites; i++) {
-//            SpriteRenderer spr = sprites[i];
-//            if (spr.isDirty()) {
-//                if (!hasTexture(spr.getTexture())) {
-//                    this.renderer.destroyGameObject(spr.gameObject);
-//                    this.renderer.add(spr.gameObject);
-//                } else {
-//                    loadVertexProperties(i);
-//                    spr.setClean();
-//                    rebufferData = true;
-//                }
-//            }
-//
-//            // TODO: get better solution for this
-//            if (spr.gameObject.transform.zIndex != this.zIndex) {
-//                destroyIfExists(spr.gameObject);
-//                renderer.add(spr.gameObject);
-//                i--;
-//            }
-//        }
-//        if (rebufferData) {
-//            glBindBuffer(GL_ARRAY_BUFFER, vboID);
-//            glBufferSubData(GL_ARRAY_BUFFER, 0, vertices);
-//        }
-//
-//        // Use shader
-//        Shader shader = Renderer.getBoundShader();
-//        shader.uploadMat4f("uProjection", Window.getScene().camera().getProjectionMatrix());
-//        shader.uploadMat4f("uView", Window.getScene().camera().getViewMatrix());
-//        for (int i=0; i < textures.size(); i++) {
-//            glActiveTexture(GL_TEXTURE0 + i + 1);
-//            textures.get(i).bind();
-//        }
-//        shader.uploadIntArray("uTextures", texSlots);
-//
-//        glBindVertexArray(vaoID);
-//        glEnableVertexAttribArray(0);
-//        glEnableVertexAttribArray(1);
-//
-//        glDrawElements(GL_TRIANGLES, this.numSprites * 6, GL_UNSIGNED_INT, 0);
-//
-//        glDisableVertexAttribArray(0);
-//        glDisableVertexAttribArray(1);
-//        glBindVertexArray(0);
-//
-//        for (int i=0; i < textures.size(); i++) {
-//            textures.get(i).unbind();
-//        }
-//        shader.detach();
-//    }
 
     public void addSprite(SpriteRenderer spr) {
         // Get index and add renderObject
@@ -342,10 +270,10 @@ public class RenderBatch implements Comparable<RenderBatch> {
 //
             // Load texture id
             vertices[offset + 8] = texId;
-//
-//            // Load entity id
-//            vertices[offset + 9] = sprite.gameObject.getUid() + 1;
-//
+
+            // Load entity id
+            vertices[offset + 9] = sprite.gameObject.getUid() + 1;
+
             offset += VERTEX_SIZE;
         }
     }

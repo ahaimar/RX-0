@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public abstract class Scene {
 
@@ -23,7 +24,6 @@ public abstract class Scene {
     protected Camera camera;
     private boolean isRunning = false;
     protected List<GameObject> gameObjects = new ArrayList<>();
-    protected GameObject activegameObject = null;
 
     protected boolean levelLoaded = false;
 
@@ -54,23 +54,14 @@ public abstract class Scene {
     }
 
     public abstract void update(float deltaTime);
+    public abstract void render();
 
     public Camera camera() {
 
         return this.camera;
     }
 
-    public  void imgui(){}
-
-    public void sceneImgui(){
-
-        if (activegameObject != null){
-            ImGui.begin("Inspector");
-            activegameObject.imgui();
-            ImGui.end();
-        }
-        imgui();
-    }
+    public void imgui(){}
 
     public void saveExit() {
         Gson gson = new GsonBuilder()
@@ -131,5 +122,14 @@ public abstract class Scene {
             this.levelLoaded = true;
         }
     }
+
+    public GameObject getGameObject(int gameObjetId){
+
+        Optional<GameObject> result = this.gameObjects.stream()
+                .filter(gameObject-> gameObject.getUid() == gameObjetId)
+                .findFirst();
+        return result.orElse(null);
+    }
+
 }
 

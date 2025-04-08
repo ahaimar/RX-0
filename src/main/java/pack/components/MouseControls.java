@@ -1,6 +1,5 @@
 package pack.components;
 
-import org.joml.Vector4f;
 import pack.matriale.MouseListener;
 import pack.objectes.GameObject;
 import pack.windows.Window;
@@ -21,6 +20,8 @@ public class MouseControls extends Component {
             this.holdingObject = go;
             Window.getScene().addGameObjectToScene(go);
             setHoldingObjectTransparency(0.5f); // Semi-transparent while holding
+        } else {
+            System.err.println("Cannot pick up a null GameObject.");
         }
     }
 
@@ -31,6 +32,8 @@ public class MouseControls extends Component {
         if (this.holdingObject != null) {
             setHoldingObjectTransparency(1.0f); // Restore original opacity
             this.holdingObject = null;
+        } else {
+            System.err.println("No object is currently held for placement.");
         }
     }
 
@@ -43,20 +46,19 @@ public class MouseControls extends Component {
         if (this.holdingObject != null) {
             SpriteRenderer renderer = this.holdingObject.getComponent(SpriteRenderer.class);
             if (renderer != null) {
-                renderer.setColor(new Vector4f(1, 1, 1, alpha));
+                renderer.getColor().w = alpha; // Modify the alpha directly if possible
+            } else {
+                System.err.println("SpriteRenderer component is missing on the held object.");
             }
         }
     }
 
     @Override
     public void update(float dt) {
+        if (holdingObject != null && holdingObject.transForm != null) {
+            holdingObject.transForm.position.x = MouseListener.getOrthoX() - 16;
+            holdingObject.transForm.position.y = MouseListener.getOrthoY() - 16;
 
-        if (this.holdingObject != null && this.holdingObject.transForm != null) {
-            // Update the object's position to follow the mouse
-            this.holdingObject.transForm.position.x = MouseListener.getOrthoX() - 16;
-            this.holdingObject.transForm.position.y = MouseListener.getOrthoY() - 16;//this.holdingObject.transForm.scale.y / 2
-
-            // Check if the left mouse button is pressed to place the object
             if (MouseListener.mouseButtonDown(GLFW_MOUSE_BUTTON_LEFT)) {
                 place();
             }

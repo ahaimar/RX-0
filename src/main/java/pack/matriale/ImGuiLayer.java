@@ -6,6 +6,9 @@ import imgui.callback.ImStrSupplier;
 import imgui.flag.*;
 import imgui.gl3.ImGuiImplGl3;
 import imgui.type.ImBoolean;
+import pack.edior.GameViewWindow;
+import pack.edior.PropertiesWindow;
+import pack.renderer.PickingTexture;
 import pack.scens.Scene;
 import pack.windows.Window;
 
@@ -20,12 +23,16 @@ public class ImGuiLayer {
 
     // LWJGL3 renderer (SHOULD be initialized)
     private final ImGuiImplGl3 imGuiGl3 = new ImGuiImplGl3();
+    private GameViewWindow gameViewWindow;
+    private PropertiesWindow propertiesWnidow;
+
     private String glslVersion = null; // We can initialize our renderer with different versions of the GLSL
 
-
-    public ImGuiLayer(Long glfwWindow) {
+    public ImGuiLayer(Long glfwWindow, PickingTexture pickingTexture) {
 
         this.glfwWindow = glfwWindow;
+        this.gameViewWindow = new GameViewWindow();
+        this.propertiesWnidow = new PropertiesWindow(pickingTexture);
     }
 
     public void initImGui() {
@@ -123,7 +130,7 @@ public class ImGuiLayer {
                 ImGui.setWindowFocus(null);
             }
 
-            if (io.getWantCaptureMouse()){
+            if (io.getWantCaptureMouse() || !gameViewWindow.getWantCaptureMouse()) {
                 MouseListener.mouseButtonCallback(w, button, action, mods);
             }
         });
@@ -131,6 +138,7 @@ public class ImGuiLayer {
         glfwSetScrollCallback(glfwWindow, (w, xOffset, yOffset) -> {
             io.setMouseWheelH(io.getMouseWheelH() + (float) xOffset);
             io.setMouseWheel(io.getMouseWheel() + (float) yOffset);
+            MouseListener.mouseScrollCallback(w, xOffset, yOffset);
         });
 
         io.setSetClipboardTextFn(new ImStrConsumer() {
@@ -184,8 +192,11 @@ public class ImGuiLayer {
         startFrame(dt);
         ImGui.newFrame();
         setupDockSpace();
-        correntScene.sceneImgui();
+        correntScene.imgui();
         ImGui.showDemoWindow();
+        gameViewWindow.imgui();
+        propertiesWnidow.update(dt, correntScene);
+        propertiesWnidow.imgui();
         ImGui.end();
         ImGui.render();
 
@@ -244,7 +255,7 @@ public class ImGuiLayer {
                 ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoMove | ImGuiWindowFlags.NoBringToFrontOnFocus
                 | ImGuiWindowFlags.NoNavFocus;
 
-        ImGui.begin("Dock space", new ImBoolean(true), windowFlags);
+        ImGui.begin("DockSpace Demo", new ImBoolean(true), windowFlags);
         ImGui.popStyleVar(2);
 
         ImGui.dockSpace(ImGui.getID("DockSpace"));

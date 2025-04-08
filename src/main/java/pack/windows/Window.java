@@ -7,15 +7,14 @@ import org.lwjgl.openal.ALC;
 import org.lwjgl.openal.ALCCapabilities;
 import org.lwjgl.openal.ALCapabilities;
 import org.lwjgl.opengl.GL;
-import pack.matriale.Camera;
 import pack.matriale.ImGuiLayer;
 import pack.matriale.KeyListener;
 import pack.matriale.MouseListener;
-import pack.renderer.DebugDraw;
-import pack.renderer.Framebuffer;
+import pack.renderer.*;
 import pack.scens.LevelEditorScene;
 import pack.scens.LevelScene;
 import pack.scens.Scene;
+import pack.utils.AssetPool;
 
 import static org.lwjgl.glfw.Callbacks.glfwFreeCallbacks;
 import static org.lwjgl.glfw.GLFW.*;
@@ -38,8 +37,10 @@ public class Window {
     // Local instance
     private volatile static Window window = null;
     private static Scene currentScene;
+    LevelEditorScene levelEditorScene = new LevelEditorScene();
     private ImGuiLayer imGuiLayer;
     private Framebuffer framebuffer;
+    private PickingTexture pickingTexture;
 
     public int r, g, b, a;
 
@@ -51,10 +52,11 @@ public class Window {
         this.width = 1000;
         this.height = 600;
         this.title = "RX-08";
-//        r = 0;
-//        g = 0;
-//        b = 1;
-//        a = 1;
+        r = 1;
+        g = 1;
+        b = 1;
+        a = 1;
+        //Window.camera = new Camera(new Vector2f((this.width / 2), (this.height / 2)));
     }
 
     public static void changeScene(int newScene) {
@@ -181,10 +183,13 @@ public class Window {
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-        this.imGuiLayer = new ImGuiLayer(glfwWindow);
-        imGuiLayer.initImGui();
-        this.framebuffer = new Framebuffer(3840, 2160);
 
+        this.framebuffer = new Framebuffer(3840, 2160);
+        this.pickingTexture = new PickingTexture(3840, 2160);
+        glViewport(0,0, 3840, 2160);
+
+        this.imGuiLayer = new ImGuiLayer(glfwWindow , pickingTexture);
+        this.imGuiLayer.initImGui();
         Window.changeScene(0);
     }
 
@@ -194,26 +199,50 @@ public class Window {
         float endTime;
         float dt = -1.0f;
 
+        Shader defaultShader = AssetPool.getShader("assets/shaders/default.glsl");
+        Shader pickingShader = AssetPool.getShader("assets/shaders/pickingShader.glsl");
+        if (defaultShader == null || pickingShader == null) {
+            System.err.println("Failed to load shaders.");
+            return;
+        }
+
         while (!glfwWindowShouldClose(glfwWindow)) {
             // Poll events
             glfwPollEvents();
+            // Render pass 1 . Render to picking texture
+
+            glDisable(GL_BLEND);
+            pickingTexture.enableWriting();
+            glViewport(0, 0, 3840, 2160);
+            glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            Renderer.bindShader(pickingShader);
+            currentScene.render();
+
+            pickingTexture.disableWriting();
+            glEnable(GL_BLEND);
+
+            // Render pass 2 . Render to picking texture
 
             DebugDraw.beginFrame();
 
+
             glClearColor(r, g, b, a);
             glClear(GL_COLOR_BUFFER_BIT);
+            this.framebuffer.bind();
 
-            //this.framebuffer.bind();
             if (dt>=0.0f) {
-
                 DebugDraw.draw();
+                Renderer.bindShader(defaultShader);
                 currentScene.update(dt);
+                currentScene.render();
             }
+
             this.framebuffer.unbind();
-
             this.imGuiLayer.updata(dt, currentScene);
-
             glfwSwapBuffers(glfwWindow);
+            MouseListener.endFrame();
 
             endTime = (float) glfwGetTime();// (float)glfwGetTime();
             dt = endTime - beginTime;
@@ -245,5 +274,13 @@ public class Window {
     public static void setHeight(int newHeight) {
 
         get().height = newHeight;
+    }
+
+    public static Framebuffer getFrameBuffer() {
+        return get().framebuffer;
+    }
+
+    public static float getTargetAspectRatio() {
+        return 16.0f / 9.0f;//getWidth() / getHeight();//
     }
 }
